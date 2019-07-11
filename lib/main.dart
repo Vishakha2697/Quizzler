@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-//import 'question.dart';
+import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() {
   runApp(MyApp());
@@ -11,27 +14,69 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.grey.shade900,
-//        appBar: AppBar(
-//          title: Text('Quizzler'),
-//        ),
         body: SafeArea(
-            child: Padding(
-    padding: EdgeInsets.symmetric(horizontal: 10.0),
-              child: Quiz(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.0),
+            child: QuizPage(),
+          ),
         ),
-      ),
       ),
     );
   }
 }
-  
 
-class Quiz extends StatefulWidget {
+class QuizPage extends StatefulWidget {
   @override
-  _QuizState createState() => _QuizState();
+  _QuizPageState createState() => _QuizPageState();
 }
 
-class _QuizState extends State<Quiz> {
+class _QuizPageState extends State<QuizPage> {
+
+  List<Icon> scoreKeeper = [];
+
+  void checkAnswer(bool userPickedAnswer){
+
+    bool correctAnswer = quizBrain.getCorrectAnswer();
+
+    setState(() {
+
+
+      if (quizBrain.isFinished() == true) {
+
+
+
+        Alert(
+          context: context,
+          title: 'Finished!',
+          desc: 'You\'ve reached the end of the quiz.',
+        ).show();
+
+
+        quizBrain.reset();
+
+
+        scoreKeeper = [];
+      }
+
+
+      else {
+        if (userPickedAnswer == correctAnswer) {
+          scoreKeeper.add(Icon(
+            Icons.check,
+            color: Colors.green,
+          ));
+        } else {
+          scoreKeeper.add(Icon(
+            Icons.close,
+            color: Colors.red,
+          ));
+        }
+        quizBrain.nextQuestion();
+      }
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -44,7 +89,7 @@ class _QuizState extends State<Quiz> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -59,9 +104,9 @@ class _QuizState extends State<Quiz> {
             padding: EdgeInsets.all(15.0),
             child: FlatButton(
               textColor: Colors.white,
-              color: Colors.amber,
+              color: Colors.green,
               child: Text(
-                'Option A',
+                'True',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20.0,
@@ -69,6 +114,7 @@ class _QuizState extends State<Quiz> {
               ),
               onPressed: () {
                 //The user picked true.
+                checkAnswer(true);
               },
             ),
           ),
@@ -77,40 +123,28 @@ class _QuizState extends State<Quiz> {
           child: Padding(
             padding: EdgeInsets.all(15.0),
             child: FlatButton(
-              color: Colors.pink,
+              color: Colors.red,
               child: Text(
-                'Option B',
+                'False',
                 style: TextStyle(
                   fontSize: 20.0,
                   color: Colors.white,
                 ),
               ),
               onPressed: () {
-                //The user picked false.
+                //The user picked true.
+                checkAnswer(false);
+
               },
             ),
           ),
         ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              color: Colors.blue,
-              child: Text(
-                'Option C',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.white,
-                ),
-              ),
-              onPressed: () {
-                //The user picked false.
-              },
-            ),
-          ),
+        Row(
+          children: scoreKeeper,
         ),
-        //TODO: Add a Row here as your score keeper
       ],
     );
   }
 }
+
+
